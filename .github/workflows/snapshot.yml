@@ -1,0 +1,21 @@
+name: Snapshot inventory
+on:
+  schedule:
+    - cron: '17 */6 * * *'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Snapshot sheet to data.json
+        run: node scripts/snapshot.mjs
+      - name: Commit data.json if changed
+        run: |
+          git config user.name "inventory-bot"
+          git config user.email "bot@localhost"
+          git add data.json
+          git diff --cached --quiet || git commit -m "inventory snapshot $(date -u +%Y-%m-%dT%H:%MZ)"
+          git push
